@@ -64,7 +64,11 @@ class SentEmail extends Model
         }
         if($meta->has('failures')) {
             foreach($meta->get('failures') as $failure) {
-                $responses[] = $failure['status'].' ('.$failure['action'].'): '.$failure['diagnosticCode'].' ('.$failure['emailAddress'].')';
+                if(!empty($failure['status'])) {
+                    $responses[] = $failure['status'].' ('.$failure['action'].'): '.$failure['diagnosticCode'].' ('.$failure['emailAddress'].')';
+                } else {
+                    $responses[] = 'Generic Failure ('.$failure['emailAddress'].')';
+                }
             }
         } else if($meta->has('complaint')) {
             $complaint_time = $meta->get('complaint_time');
