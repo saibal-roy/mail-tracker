@@ -42,11 +42,11 @@ class RecordBounceJob implements ShouldQueue
             $meta->put('sns_message_bounce', $this->message); // append the full message received from SNS to the 'meta' field
             $sent_email->meta = $meta;
             $sent_email->save();
-        }
 
-        if ($this->message->bounce->bounceType == 'Permanent') {
-            foreach ($this->message->bounce->bouncedRecipients as $recipient) {
-                Event::dispatch(new PermanentBouncedMessageEvent($recipient->emailAddress, $sent_email));
+            if ($this->message->bounce->bounceType == 'Permanent') {
+                foreach ($this->message->bounce->bouncedRecipients as $recipient) {
+                    Event::dispatch(new PermanentBouncedMessageEvent($recipient->emailAddress, $sent_email));
+                }
             }
         }
     }

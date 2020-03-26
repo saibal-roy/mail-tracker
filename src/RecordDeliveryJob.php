@@ -36,10 +36,10 @@ class RecordDeliveryJob implements ShouldQueue
             $meta->put('sns_message_delivery', $this->message); // append the full message received from SNS to the 'meta' field
             $sent_email->meta = $meta;
             $sent_email->save();
-        }
 
-        foreach ($this->message->delivery->recipients as $recipient) {
-            Event::dispatch(new EmailDeliveredEvent($recipient, $sent_email));
+            foreach ($this->message->delivery->recipients as $recipient) {
+                Event::dispatch(new EmailDeliveredEvent($recipient, $sent_email));
+            }
         }
     }
 }

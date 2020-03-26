@@ -39,10 +39,10 @@ class RecordComplaintJob implements ShouldQueue
             $meta->put('sns_message_complaint', $this->message); // append the full message received from SNS to the 'meta' field
             $sent_email->meta = $meta;
             $sent_email->save();
-        }
 
-        foreach ($this->message->complaint->complainedRecipients as $recipient) {
-            Event::dispatch(new ComplaintMessageEvent($recipient->emailAddress, $sent_email));
+            foreach ($this->message->complaint->complainedRecipients as $recipient) {
+                Event::dispatch(new ComplaintMessageEvent($recipient->emailAddress, $sent_email));
+            }
         }
     }
 }
