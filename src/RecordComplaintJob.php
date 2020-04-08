@@ -25,6 +25,11 @@ class RecordComplaintJob implements ShouldQueue
         $this->message = $message;
     }
 
+    public function retryUntil()
+    {
+        return now()->addDays(5);
+    }
+
     public function handle()
     {
         $sent_email = SentEmail::where('message_id', $this->message->mail->messageId)->first();

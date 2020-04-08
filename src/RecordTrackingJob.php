@@ -28,6 +28,11 @@ class RecordTrackingJob implements ShouldQueue
         $this->sentEmail = $sentEmail;
     }
 
+    public function retryUntil()
+    {
+        return now()->addDays(5);
+    }
+
     public function handle()
     {
         $this->sentEmail->opens++;

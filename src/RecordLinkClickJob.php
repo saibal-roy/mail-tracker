@@ -23,6 +23,11 @@ class RecordLinkClickJob implements ShouldQueue
     public $sentEmail;
     public $url;
 
+    public function retryUntil()
+    {
+        return now()->addDays(5);
+    }
+
     public function __construct($sentEmail, $url)
     {
         $this->sentEmail = $sentEmail;
