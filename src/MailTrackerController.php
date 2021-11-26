@@ -31,7 +31,7 @@ class MailTrackerController extends Controller
         $tracker = Model\SentEmail::where('hash', $hash)
             ->first();
         if ($tracker) {
-            RecordTrackingJob::dispatch($tracker);
+            RecordTrackingJob::dispatch($tracker, request()->ip());
         }
 
         return $response;
@@ -58,7 +58,7 @@ class MailTrackerController extends Controller
         $tracker = Model\SentEmail::where('hash', $hash)
             ->first();
         if ($tracker) {
-            RecordLinkClickJob::dispatch($tracker, $url);
+            RecordLinkClickJob::dispatch($tracker, $url, request()->ip());
             return redirect($url);
         }
 

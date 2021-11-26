@@ -28,10 +28,11 @@ class RecordLinkClickJob implements ShouldQueue
         return now()->addDays(5);
     }
 
-    public function __construct($sentEmail, $url)
+    public function __construct($sentEmail, $url, $ipAddress)
     {
         $this->sentEmail = $sentEmail;
         $this->url = $url;
+        $this->ipAddress = $ipAddress;
     }
 
     public function handle()
@@ -49,6 +50,6 @@ class RecordLinkClickJob implements ShouldQueue
                 'hash' => $this->sentEmail->hash,
             ]);
         }
-        Event::dispatch(new LinkClickedEvent($this->sentEmail));
+        Event::dispatch(new LinkClickedEvent($this->sentEmail, $this->ipAddress));
     }
 }
