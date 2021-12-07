@@ -21,24 +21,18 @@ class SentEmail extends Model
     protected $fillable = [
         'hash',
         'headers',
-        'sender_name',
-        'sender_email',
-        'recipient_name',
-        'recipient_email',
+        'sender',
+        'recipient',
         'subject',
         'content',
         'opens',
         'clicks',
         'message_id',
         'meta',
-        'opened_at',
-        'clicked_at',
     ];
 
     protected $casts = [
         'meta' => 'collection',
-        'opened_at' => 'datetime',
-        'clicked_at' => 'datetime',
     ];
 
     public function getConnectionName()
@@ -62,16 +56,6 @@ class SentEmail extends Model
         } else {
             return '';
         }
-    }
-
-    public function getSenderAttribute()
-    {
-        return $this->sender_name.' <'.$this->sender_email.'>';
-    }
-
-    public function getRecipientAttribute()
-    {
-        return $this->recipient_name.' <'.$this->recipient_email.'>';
     }
 
     /**
@@ -115,11 +99,8 @@ class SentEmail extends Model
     public function getHeader($key)
     {
         $headers = collect(preg_split("/\r\n|\n|\r/", $this->headers))
-            ->filter(function ($header) {
-                return preg_match("/:/", $header);
-            })
             ->transform(function ($header) {
-                list($key, $value) = explode(":", $header, 2);
+                list($key, $value) = explode(":", $header.":");
                 return collect([
                     'key' => trim($key),
                     'value' => trim($value)

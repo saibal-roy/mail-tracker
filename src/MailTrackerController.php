@@ -2,24 +2,24 @@
 
 namespace jdavidbakr\MailTracker;
 
-use App\Http\Requests;
 use Event;
-use Illuminate\Foundation\Support\Providers\RouteServiceProvider;
+use Response;
+use App\Http\Requests;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use jdavidbakr\MailTracker\Events\LinkClickedEvent;
-use jdavidbakr\MailTracker\Exceptions\BadUrlLink;
-use jdavidbakr\MailTracker\RecordLinkClickJob;
 use jdavidbakr\MailTracker\RecordTrackingJob;
-use Response;
+use jdavidbakr\MailTracker\RecordLinkClickJob;
+use jdavidbakr\MailTracker\Events\ViewEmailEvent;
+use jdavidbakr\MailTracker\Exceptions\BadUrlLink;
+use jdavidbakr\MailTracker\Events\LinkClickedEvent;
 
 class MailTrackerController extends Controller
 {
     public function getT($hash)
     {
         // Create a 1x1 ttransparent pixel and return it
-        $pixel = sprintf('%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c', 71, 73, 70, 56, 57, 97, 1, 0, 1, 0, 128, 255, 0, 192, 192, 192, 0, 0, 0, 33, 249, 4, 1, 0, 0, 0, 0, 44, 0, 0, 0, 0, 1, 0, 1, 0, 0, 2, 2, 68, 1, 0, 59);
+        $pixel = sprintf('%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%', 71, 73, 70, 56, 57, 97, 1, 0, 1, 0, 128, 255, 0, 192, 192, 192, 0, 0, 0, 33, 249, 4, 1, 0, 0, 0, 0, 44, 0, 0, 0, 0, 1, 0, 1, 0, 0, 2, 2, 68, 1, 0, 59);
         $response = Response::make($pixel, 200);
         $response->header('Content-type', 'image/gif');
         $response->header('Content-Length', 42);
@@ -31,13 +31,7 @@ class MailTrackerController extends Controller
         $tracker = Model\SentEmail::where('hash', $hash)
             ->first();
         if ($tracker) {
-            $user_agent = request()->header('User-Agent');
-            RecordTrackingJob::dispatch($tracker, request()->ip(), $user_agent )
-                ->onQueue(config('mail-tracker.tracker-queue'));
-            if (!$tracker->opened_at) {
-                $tracker->opened_at = now();
-                $tracker->save();
-            }
+            RecordTrackingJob::dispatch($tracker, request()->ip());
         }
 
         return $response;
@@ -47,7 +41,7 @@ class MailTrackerController extends Controller
     {
         $url = base64_decode(str_replace("$", "/", $url));
         if (filter_var($url, FILTER_VALIDATE_URL) === false) {
-            throw new BadUrlLink('Mail hash: '.$hash.', URL: '.$url);
+            throw new BadUrlLink('Mail hash: '.$hash);
         }
         return $this->linkClicked($url, $hash);
     }
@@ -61,19 +55,13 @@ class MailTrackerController extends Controller
 
     protected function linkClicked($url, $hash)
     {
-        if (!$url) {
-            $url = config('mail-tracker.redirect-missing-links-to') ?: '/';
-        }
         $tracker = Model\SentEmail::where('hash', $hash)
             ->first();
         if ($tracker) {
-            RecordLinkClickJob::dispatch($tracker, $url, request()->ip())
-                ->onQueue(config('mail-tracker.tracker-queue'));
-            if (!$tracker->clicked_at) {
-                $tracker->clicked_at = now();
-                $tracker->save();
-            }
+            RecordLinkClickJob::dispatch($tracker, $url, request()->ip());
+            return redirect($url);
         }
-        return redirect($url);
+
+        throw new BadUrlLink('Mail hash: '.$hash);
     }
 }

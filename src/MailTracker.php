@@ -2,7 +2,7 @@
 
 namespace jdavidbakr\MailTracker;
 
-use Illuminate\Support\Facades\Event;
+use Event;
 use Illuminate\Support\Str;
 use jdavidbakr\MailTracker\Model\SentEmail;
 use jdavidbakr\MailTracker\Events\EmailSentEvent;
@@ -29,7 +29,7 @@ class MailTracker implements \Swift_Events_SendListener
     public function sendPerformed(\Swift_Events_SendEvent $event)
     {
         // If this was sent through SES, retrieve the data
-        if ((config('mail.default') ?? config('mail.driver')) == 'ses') {
+        if (config('mail.driver') == 'ses') {
             $message = $event->getMessage();
             $this->updateSesMessageId($message);
         }
@@ -66,7 +66,7 @@ class MailTracker implements \Swift_Events_SendListener
         // Append the tracking url
         $tracking_pixel = '<img border=0 width=1 alt="" height=1 src="'.route('mailTracker_t', [$hash]).'" />';
 
-        $linebreak = app(Str::class)->random(32);
+        $linebreak = Str::random(32);
         $html = str_replace("\n", $linebreak, $html);
 
         if (preg_match("/^(.*<body[^>]*>)(.*)$/", $html, $matches)) {
@@ -84,7 +84,7 @@ class MailTracker implements \Swift_Events_SendListener
         $this->hash = $hash;
 
         $html = preg_replace_callback(
-            "/(<a[^>]*href=[\"])([^\"]*)/",
+            "/(<a[^>]*href=['\"])([^'\"]*)/",
             [$this, 'inject_link_callback'],
             $html
         );
@@ -139,7 +139,7 @@ class MailTracker implements \Swift_Events_SendListener
                     continue;
                 }
                 do {
-                    $hash = app(Str::class)->random(32);
+                    $hash = Str::random(32);
                     $used = SentEmail::where('hash', $hash)->count();
                 } while ($used > 0);
                 $headers->addTextHeader('X-Mailer-Hash', $hash);
@@ -163,12 +163,10 @@ class MailTracker implements \Swift_Events_SendListener
                 $tracker = SentEmail::create([
                     'hash' => $hash,
                     'headers' => $headers->toString(),
-                    'sender_name' => $from_name,
-                    'sender_email' => $from_email,
-                    'recipient_name' => $to_name,
-                    'recipient_email' => $to_email,
+                    'sender' => $from_name." <".$from_email.">",
+                    'recipient' => $to_name.' <'.$to_email.'>',
                     'subject' => $subject,
-                    'content' => config('mail-tracker.log-content', true) ? (strlen($original_content) > config('mail-tracker.content-max-size', 65535) ? substr($original_content, 0, config('mail-tracker.content-max-size', 65535)) . '...' : $original_content) : null,
+                    'content' => config('mail-tracker.log-content', true) ? (strlen($original_content) > 65535 ? substr($original_content, 0, 65532) . "..." : $original_content) : null,
                     'opens' => 0,
                     'clicks' => 0,
                     'message_id' => $message->getId(),

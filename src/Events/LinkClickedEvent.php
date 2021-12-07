@@ -19,7 +19,7 @@ class LinkClickedEvent implements ShouldQueue
      * @param  sent_email  $sent_email
      * @return void
      */
-    public function __construct(SentEmail $sent_email, $ip_address)
+    public function __construct(SentEmail $sent_email,$ip_address)
     {
         $this->sent_email = $sent_email;
         $this->ip_address = $ip_address;

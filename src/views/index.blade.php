@@ -42,13 +42,11 @@
                         <th>SMTP</th>
                         <th>Recipient</th>
                         <th>Subject</th>
-                        <th>First View</th>
                         <th>Opens</th>
-                        <th>First Click</th>
                         <th>Clicks</th>
                         <th>Sent At</th>
                         <th>View Email</th>
-                        <th>Click Report</th>
+                        <th>Clicks</th>
                     </tr>
                 @foreach($emails as $email)
                     <tr class="{{ $email->report_class }}">
@@ -59,9 +57,7 @@
                       </td>
                       <td>{{$email->recipient}}</td>
                       <td>{{$email->subject}}</td>
-                      <td>{{$email->opened_at}}</td>
                       <td>{{$email->opens}}</td>
-                      <td>{{$email->clicked_at}}</td>
                       <td>{{$email->clicks}}</td>
                       <td>{{$email->created_at->format(config('mail-tracker.date-format'))}}</td>
                       <td>

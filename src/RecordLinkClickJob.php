@@ -22,7 +22,6 @@ class RecordLinkClickJob implements ShouldQueue
 
     public $sentEmail;
     public $url;
-    public $ipAddress;
 
     public function retryUntil()
     {
