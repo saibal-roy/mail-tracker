@@ -23,12 +23,13 @@ class RecordTrackingJob implements ShouldQueue
 
     public $sentEmail;
     public $ipAddress;
+    public $userAgent;
 
-
-    public function __construct( $sentEmail,$ipAddress )
+    public function __construct($sentEmail, $ipAddress, $userAgent)
     {
         $this->sentEmail = $sentEmail;
         $this->ipAddress = $ipAddress;
+        $this->userAgent = $userAgent;
     }
 
     public function retryUntil()
@@ -40,6 +41,6 @@ class RecordTrackingJob implements ShouldQueue
     {
         $this->sentEmail->opens++;
         $this->sentEmail->save();
-        Event::dispatch(new ViewEmailEvent($this->sentEmail,$this->ipAddress));
+        Event::dispatch(new ViewEmailEvent($this->sentEmail, $this->ipAddress, $this->userAgent));
     }
 }

@@ -31,7 +31,8 @@ class MailTrackerController extends Controller
         $tracker = Model\SentEmail::where('hash', $hash)
             ->first();
         if ($tracker) {
-            RecordTrackingJob::dispatch($tracker, request()->ip());
+            $ua = request()->header('User-Agent');
+            RecordTrackingJob::dispatch($tracker, request()->ip(), $ua);
         }
 
         return $response;
@@ -41,7 +42,7 @@ class MailTrackerController extends Controller
     {
         $url = base64_decode(str_replace("$", "/", $url));
         if (filter_var($url, FILTER_VALIDATE_URL) === false) {
-            throw new BadUrlLink('Mail hash: '.$hash);
+            throw new BadUrlLink('Mail hash: ' . $hash);
         }
         return $this->linkClicked($url, $hash);
     }
@@ -62,6 +63,6 @@ class MailTrackerController extends Controller
             return redirect($url);
         }
 
-        throw new BadUrlLink('Mail hash: '.$hash);
+        throw new BadUrlLink('Mail hash: ' . $hash);
     }
 }
